@@ -1,0 +1,6 @@
+__pycache__
+.venv
+documentation/*.pdf
+.DS_Store
+*/.DS_Store
+.ideas
