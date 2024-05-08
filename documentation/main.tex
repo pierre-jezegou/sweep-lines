@@ -19,11 +19,42 @@
 \tableofcontents
 
 \section{Introduction}
+\subsection{Sweep lines}
+The Segment Intersection Problem is a classic problem in computational geometry. It involves finding all the intersections between a set of line segments in the plane. This problem has various applications, such as in computer graphics, robotics, and geographic information systems.\\
+
+There are several algorithms to solve the Segment Intersection Problem, and one popular approach is the Sweep Line Algorithm. This algorithm involves sweeping a vertical line across the plane and processing the line segments as they are encountered by the sweep line.
+To implement the Sweep Line Algorithm, we need to define the data structures and events that will be used. The data structures typically include a status structure to store the line segments that intersect the current sweep line position, and a priority queue to handle the events.\\
+The events in the Sweep Line Algorithm correspond to the endpoints of the line segments. As the sweep line encounters an endpoint, it triggers an event that updates the status structure and performs any necessary computations.\\
+
+By implementing the Sweep Line Algorithm, we can efficiently find all the intersections between the line segments and solve the Segment Intersection Problem.
 
 
+\subsection{Project information}
+All the source code (programs, documentation and image generators) is available in the GitHub respository dedicated to the project: https://github.com/pierre-jezegou/sweep-lines
+
+For performance testing of algorithms, we use a MacBook Air with the M2 processor. This hardware provides ample computing power to execute our algorithms efficiently, ensuring swift analysis of their performance. As recommended, this report has been written in \LaTeX.
+
+
+\input{../random_segments.tex}
+\section{Sweep Line Algorithm implementation}
+\subsection{Event driven}
+\subsection{Structures used}
+
+\section{Tests and results}
+\subsection{Examples implementation}
+\subsubsection{First example}
+\subsubsection{Second example}
+\subsection{Performance tests}
+\subsection{Results}
+
+\section{Conclusions}
+\section{Appendix}
+\lstinputlisting[firstline=1,lastline=50, language=Python]{../additional_algorithms/graphic_sweep_lines.py}
 
 \newpage
 \listoffigures
 \lstlistoflistings
 \listoftables
+
+
 \end{document}
