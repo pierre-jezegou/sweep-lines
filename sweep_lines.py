@@ -35,6 +35,10 @@ class Segment():
         """Return a string representation of the segment."""
         return f"({self.start}, {self.end})"
 
+    def current_y(self, x: float) -> float:
+        """Return the y-coordinate of the segment at the given x-coordinate."""
+        return self.start.y + self.slope * (x - self.start.x)
+
     def intersection(self, other: 'Segment') -> Point | bool:
         """
         Check if this segment intersects another segment.
@@ -90,44 +94,54 @@ def solve(segments: list[Segment]) -> list[Point]:
 
     # Sort the events by x-coordinate and event type
     events.sort(key=lambda x: (x.x, -x.event_type))
-    print(events)
 
+    # Initialize the sweep line algorithm
     status: list[Segment] = [] # list of segments that are currently intersecting the sweep line
     intersections: list[Point] = [] # list of intersection points
 
     # Process the events one by one from left to right
     for event in events:
         segment = segments[event.segment_id]
+
         if event.event_type == 1:
             status.append(segment) # add segment to status
-            status.sort(key=lambda x: x.slope) # sort by slope
+            status.sort(key=lambda seg: seg.current_y(seg.start.x)) # sort by current y-coordinate
 
             if len(status) > 1:
-                if status[-1].slope == status[-2].slope: # Compare slopes of the last two segments
-                    if status[-1].start.x > status[-2].start.x:
-                        status[-1], status[-2] = status[-2], status[-1]
-                inter = status[-1].intersection(status[-2])
-                if inter:
-                    intersections.append(inter)
-
-        else:
-            status.remove(segment)
-            if status:
-                if status[-1].slope == segment.slope:
-                    inter = status[-1].intersection(segment)
+                # Get index of current segment in status
+                idx = status.index(segment)
+                if idx > 0:
+                    # Compare with below segment
+                    inter = status[idx].intersection(status[idx - 1])
                     if inter:
                         intersections.append(inter)
+                if idx < len(status) - 1:
+                    # Compare with above segment
+                    inter = status[idx].intersection(status[idx + 1])
+                    if inter:
+                        intersections.append(inter)
+
+        else:
+            # get index of segment in status
+            idx = status.index(segment)
+            # Check if the segment has neighbors
+            if idx > 0 and idx < len(status) - 1:
+                # Check for intersection between the neighbors
+                inter = status[idx - 1].intersection(status[idx + 1])
+                if inter:
+                    intersections.append(inter)
+            status.remove(segment)
     return intersections
 
-# Example
-segment1 = Segment(Point(1, 1), Point(4, 4))
-segment2 = Segment(Point(1, 3), Point(3, 1))
-segment3 = Segment(Point(3, 1), Point(5, 3))
-segment4 = Segment(Point(3, 2), Point(5, 0))
 
-segments = [segment3, segment4]
-intersections = solve(segments)
-for intersection in intersections:
-    print(intersection)
-# Output:
-# (2.0, 2.0)
+if __name__ == "__main__":
+    # Example
+    segment1 = Segment(Point(1, 1), Point(4, 4))
+    segment2 = Segment(Point(1, 3), Point(3, 1))
+    segment3 = Segment(Point(3, 1), Point(5, 3))
+    segment4 = Segment(Point(3, 2), Point(5, 0))
+
+    segments = [segment1, segment2, segment3, segment4]
+    intersections = solve(segments)
+    for intersection in intersections:
+        print(intersection)
