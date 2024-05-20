@@ -1,0 +1,12 @@
+\begin{tikzpicture}
+    \begin{axis}
+        % Segments
+        {% for segment in segments %}
+            {{ segment }};
+        {% endfor %}
+        % Intersections
+        {% for intersection in intersections %}
+            \node[diamond,fill=blue, inner sep=2pt] at {{ intersection }} {};
+        {% endfor %}
+    \end{axis}
+\end{tikzpicture}
