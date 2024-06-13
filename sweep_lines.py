@@ -84,14 +84,14 @@ class Segment():
 
 class Event():
     """An event in the sweep line algorithm."""
-    def __init__(self, x: float, y: float, event_type: int, segment_id: int):
+    def __init__(self, x: float, y: float, event_type: int, segment: Segment | list[Segment]):
         self.x = x
         self.y = y
         self.event_type = event_type
-        self.segment_id = segment_id
+        self.segment = segment
 
     def __repr__(self):
-        return f"(segment={self.segment_id}, type={self.event_type}, point.x {self.x}, point.y {self.y})"
+        return f"(segment={self.segment}, type={self.event_type}, point.x {self.x}, point.y {self.y})"
 
 def create_intersection_event(events: list[Event],
                               status,
@@ -107,8 +107,7 @@ def create_intersection_event(events: list[Event],
         events.append(Event(inter.x,
                             inter.y,
                             0,
-                            (status.index(segment1),
-                             status.index(segment2))))
+                            [segment1, segment2]))
         events.sort(key=lambda event: (event.x, event.y, - event.event_type))
 
         # # Swap the segments in the status list
@@ -140,11 +139,11 @@ def solve(segments: list[Segment]) -> list[Point]:
     events = []
 
     # Add all the start and end points of the segments to the events list
-    for i, segment in enumerate(segments):
+    for _, segment in enumerate(segments):
         if segment.start.x > segment.end.x: # swap if start is greater than end
             segment.start, segment.end = segment.end, segment.start
-        events.append(Event(segment.start.x, segment.start.y, 1, i)) # 1 for start
-        events.append(Event(segment.end.x, segment.end.y, -1, i)) # -1 for end
+        events.append(Event(segment.start.x, segment.start.y, 1, segment)) # 1 for start
+        events.append(Event(segment.end.x, segment.end.y, -1, segment)) # -1 for end
 
     events.sort(key=lambda event: (event.x, event.y, - event.event_type))
 
@@ -156,7 +155,7 @@ def solve(segments: list[Segment]) -> list[Point]:
     while events:
         event = events.pop(0)
         try:
-            segment = segments[event.segment_id]
+            segment = event.segment
         except TypeError:
             pass
 
@@ -198,8 +197,14 @@ def solve(segments: list[Segment]) -> list[Point]:
         else:
             intersections.add(Point(event.x, event.y))
             # Swap the segments in the status list
-            # idx1, idx2 = event.segment_id
-            # status[idx1], status[idx2] = status[idx2], status[idx1]
+            segment1, segment2 = event.segment
+            try:
+                idx1 = status.index(segment1)
+                idx2 = status.index(segment2)
+                status[idx1], status[idx2] = status[idx2], status[idx1]
+            except ValueError:
+                continue
+                # Mean that the segments have already been removed from the status list
 
     return intersections
 
