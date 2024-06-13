@@ -36,6 +36,42 @@ For performance testing of algorithms, we use a MacBook Air with the M2 processo
 
 
 \section{Sweep Line Algorithm implementation}
+\subsection{Structures}
+\subsubsection{Point}
+
+\subsubsection{Segment}
+\paragraph{Intersection of 2 segments}
+The intersection of two line segments can be determined using the concept of linear algebra, specifically by analyzing the determinant of a matrix formed by pairs of points. Given two line segments defined by points $P_1(x_1, y_1)$ and $P_2(x_2, y_2)$ for the first segment, and $Q_1(x_3, y_3)$ and $Q_2(x_4, y_4)$ for the second segment, we form two vectors representing each line segment: vector $P$ from $P_1$ to $P_2$ and vector $Q$ from $Q_1$ to $Q_2$.\\
+$$P = \begin{pmatrix}
+x_2 - x_1\\
+y_2 - y_1
+\end{pmatrix}\qquad
+Q = \begin{pmatrix}
+x_4 - x_3\\
+y_4 - y_3
+\end{pmatrix}$$
+
+$$M = \begin{pmatrix}
+x_2 - x_1 & x_4 - x_3\\
+y_2 - y_1 & y_4 - y_3
+\end{pmatrix}$$
+
+The intersection of the two line segments occurs if and only if the determinant of the matrix $M$ formed by vectors $P$ and $Q$ is non-zero. Geometrically, this determinant represents the area formed by the parallelogram spanned by the two vectors. If the determinant is non-zero, it indicates that the two vectors are not collinear, meaning the two line segments intersect. Conversely, if the determinant is zero, it implies that the two vectors are collinear, and the line segments do not intersect.\\
+As a consequence, the determinant of the matrix $M$ can be used to determine the intersection of two line segments. The determinant is calculated as follows:
+$$\mathrm{det}(M) = (x_2 - x_1)(y_4 - y_3) - (y_2 - y_1)(x_4 - x_3)$$
+
+Be careful, this formula only gives the intersection point of the two lines, not the intersection point of the two segments. To determine the intersection point of the two segments, we must verify that the intersection point lies within the bounds of both segments. This can be done by checking that the intersection point lies within the bounding box of both segments. If the intersection point satisfies this condition, it is the intersection point of the two segments. Otherwise, the two segments do not intersect.\\
+The bounding box of a line segment is defined by the minimum and maximum x and y coordinates of the two endpoints of the segment. The intersection point of the two segments is within the bounding box of both segments if its x and y coordinates lie within the bounding boxes of both segments.\\
+
+Let $I=(x_i, y_i)$ the potential int point. $I$ is the intersection point of the two segments if and only if $I$ is in the bounding box of both segments.
+$$x_i \in [x_{min}, x_{max}], y_i \in [y_{min}, y_{max}]\qquad \text{with}
+\left\lbrace\begin{array}{l}
+x_{min} = \min_{i\in[1, 4]}\{x_i\}\\
+x_{max} = \max_{i\in[1, 4]}\{x_i\}\\
+y_{min} = \min_{i\in[1, 4]}\{y_i\}\\
+y_{max} = \max_{i\in[1, 4]}\{y_i\}
+\end{array}\right.$$
+
 \subsection{Event driven}
 \subsection{Structures used}
 
@@ -55,5 +91,7 @@ For performance testing of algorithms, we use a MacBook Air with the M2 processo
 \lstlistoflistings
 \listoftables
 
+\input{../random_segments_2.tex}
+\input{../tikz.tex}
 
 \end{document}

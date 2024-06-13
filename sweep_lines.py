@@ -108,7 +108,7 @@ def solve(segments: list[Segment]) -> list[Point]:
         events.append(Event(segment.end.x, -1, i)) # -1 for end
 
     # Sort the events by x-coordinate and event type
-    events.sort(key=lambda x: (x.x, -x.event_type))
+    events.sort(key=lambda x: (x.x, -x.event_type, x.segment_id))
 
     # Initialize the sweep line algorithm
     status: list[Segment] = [] # list of segments that are currently intersecting the sweep line
@@ -120,7 +120,7 @@ def solve(segments: list[Segment]) -> list[Point]:
 
         if event.event_type == 1:
             status.append(segment) # add segment to status
-            status.sort(key=lambda seg: seg.current_y(seg.start.x)) # sort by current y-coordinate
+            status.sort(key=lambda seg: seg.current_y(event.x)) # sort by current y-coordinate
 
             if len(status) > 1:
                 # Get index of current segment in status
@@ -137,14 +137,16 @@ def solve(segments: list[Segment]) -> list[Point]:
                         intersections.add(inter)
 
         else:
+            status.sort(key=lambda seg: seg.current_y(event.x)) # sort by current y-coordinate
             # get index of segment in status
             idx = status.index(segment)
-            # Check if the segment has neighbors
-            if idx > 0 and idx < len(status) - 1:
-                # Check for intersection between the neighbors
-                inter = status[idx - 1].intersection(status[idx + 1])
-                if inter:
-                    intersections.add(inter)
+
+            # Compare with all active segments
+            for i, active_segment in enumerate(status):
+                if i != idx:
+                    inter = active_segment.intersection(status[idx])
+                    if inter:
+                        intersections.add(inter)
             status.remove(segment)
     return intersections
 

@@ -31,8 +31,10 @@ if __name__ == "__main__":
     # segment2 = Segment(Point(1, 3), Point(3, 1))
     # segment3 = Segment(Point(3, 1), Point(5, 3))
     # segment4 = Segment(Point(3, 2), Point(5, 0))
+    # segment5 = Segment(Point(2, 1), Point(2.6, 1.5))
+    # segment6 = Segment(Point(3, 4), Point(5, 2))
 
-    # segments = [segment1, segment2, segment3, segment4]
+    # segments = [segment1, segment2, segment3, segment4, segment5, segment6]
 
     # Genetate 100 random segments
     import random
