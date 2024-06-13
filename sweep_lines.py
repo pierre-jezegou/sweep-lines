@@ -84,8 +84,9 @@ class Segment():
 
 class Event():
     """An event in the sweep line algorithm."""
-    def __init__(self, x: float, event_type: int, segment_id: int):
+    def __init__(self, x: float, y: float, event_type: int, segment_id: int):
         self.x = x
+        self.y = y
         self.event_type = event_type
         self.segment_id = segment_id
 
@@ -104,8 +105,8 @@ def solve(segments: list[Segment]) -> list[Point]:
     for i, segment in enumerate(segments):
         if segment.start.x > segment.end.x: # swap if start is greater than end
             segment.start, segment.end = segment.end, segment.start
-        events.append(Event(segment.start.x, 1, i)) # 1 for start
-        events.append(Event(segment.end.x, -1, i)) # -1 for end
+        events.append(Event(segment.start.x, segment.start.y, 1, i)) # 1 for start
+        events.append(Event(segment.end.x, segment.start.y, -1, i)) # -1 for end
 
     # Sort the events by x-coordinate and event type
     events.sort(key=lambda x: (x.x, -x.event_type, x.segment_id))
@@ -115,7 +116,8 @@ def solve(segments: list[Segment]) -> list[Point]:
     intersections: set[Point] = set() # list of intersection points
 
     # Process the events one by one from left to right
-    for event in events:
+    while events:
+        event = events.pop(0)
         segment = segments[event.segment_id]
 
         if event.event_type == 1:
@@ -129,25 +131,41 @@ def solve(segments: list[Segment]) -> list[Point]:
                     # Compare with below segment
                     inter = status[idx].intersection(status[idx - 1])
                     if inter:
-                        intersections.add(inter)
+                        # Add intersection point to the events list
+                        events.append(Event(inter.x, inter.y, 0, -1))
+
                 if idx < len(status) - 1:
                     # Compare with above segment
                     inter = status[idx].intersection(status[idx + 1])
                     if inter:
-                        intersections.add(inter)
+                        events.append(Event(inter.x, inter.y, 0, -1))
 
-        else:
+        elif event.event_type == -1:
             status.sort(key=lambda seg: seg.current_y(event.x)) # sort by current y-coordinate
             # get index of segment in status
             idx = status.index(segment)
-
-            # Compare with all active segments
-            for i, active_segment in enumerate(status):
-                if i != idx:
-                    inter = active_segment.intersection(status[idx])
-                    if inter:
-                        intersections.add(inter)
+            # Compare with the segment above
+            if idx > 0:
+                inter = status[idx - 1].intersection(segment)
+                if inter:
+                    events.append(Event(inter.x, inter.y, 0, -1))
+            # Compare with the segment below
+            if idx < len(status) - 1:
+                inter = status[idx + 1].intersection(segment)
+                if inter:
+                    events.append(Event(inter.x, inter.y, 0, -1))
+            # Compare with the remaining segment above and below
+            if idx > 0 and idx < len(status) - 1:
+                inter = status[idx - 1].intersection(status[idx + 1])
+                if inter:
+                    events.append(Event(inter.x, inter.y, 0, -1))
             status.remove(segment)
+
+        else:
+            intersections.add(Point(event.x, event.y))
+
+
+        events.sort(key=lambda e: (e.x, -e.event_type, e.segment_id))
     return intersections
 
 def naive_solve(segments: list[Segment]) -> list[Point]:
@@ -157,10 +175,10 @@ def naive_solve(segments: list[Segment]) -> list[Point]:
     Complexity: O(n^2) where n is the number of segments.
     """
     intersections = set()
-    for i, segment1 in enumerate(segments):
-        for j, segment2 in enumerate(segments):
-            if i != j:
-                inter = segment1.intersection(segment2)
-                if inter:
-                    intersections.add(inter)
-    return intersections
+    n = len(segments)
+    for i in range(n):
+        for j in range(i + 1, n):
+            inter = segments[i].intersection(segments[j])
+            if inter:
+                intersections.add(inter)
+    return list(intersections)
