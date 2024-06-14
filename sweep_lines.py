@@ -130,11 +130,11 @@ def swap_segments(status, segment1, segment2):
     """
     idx1 = status.index(segment1)
     idx2 = status.index(segment2)
-    if segment1.start.y > segment2.end.y:
-        if idx1 > idx2:
+    if segment1.start.y >= segment2.end.y:
+        if idx1 < idx2:
             status[idx1], status[idx2] = status[idx2], status[idx1]  
     else:
-        if idx1 < idx2:
+        if idx1 > idx2:
             status[idx1], status[idx2] = status[idx2], status[idx1]
 
 def solve(segments: list[Segment]) -> list[Point]:

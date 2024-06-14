@@ -35,16 +35,16 @@ if __name__ == "__main__":
     # Example
     segments = [
         Segment(Point(1, 1), Point(4, 4)),
-        Segment(Point(1, 3), Point(3, 1)),
-        Segment(Point(3, 1), Point(5, 3)),
-        Segment(Point(3, 2), Point(5, 0)),
-        Segment(Point(2, 1), Point(2.6, 1.5)),
+        # Segment(Point(1, 3), Point(3, 1)),
+        # Segment(Point(3, 1), Point(5, 3)),
+        # Segment(Point(3, 2), Point(5, 0)),
+        # Segment(Point(2, 1), Point(2.6, 1.5)),
         Segment(Point(3, 4), Point(5, 2)),
         Segment(Point(3, 3.5), Point(4.5, 1.5)),
-        Segment(Point(3.5, 2), Point(4.5, 3.5)),
-        Segment(Point(2.5, 3), Point(3.5, 2.5)),
-        Segment(Point(3, 2.5), Point(4, 3.5)),
-        Segment(Point(1.5, 4), Point(1.75, 0))
+        # Segment(Point(3.5, 2), Point(4.5, 3.5)),
+        # Segment(Point(2.5, 3), Point(3.5, 2.5)),
+        # Segment(Point(3, 2.5), Point(4, 3.5)),
+        # Segment(Point(1.5, 4), Point(1.75, 0))
     ]
 
     # Genetate 100 random segments
