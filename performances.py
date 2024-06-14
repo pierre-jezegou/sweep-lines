@@ -22,6 +22,7 @@ class Test():
         self.naive_time = naive_time
         self.sweep_intersections = sweep_intersections
         self.naive_intersections = naive_intersections
+        self.percentage_detected_intersections = sweep_intersections / naive_intersections
 
 
 def generate_random_segments(size) -> list[Segment]:
@@ -85,8 +86,9 @@ def plot_pgf(performances: list[Test]) -> str:
     series = [
         # TestSerie("Naive CPU Time", "naive_time", performances, "red"),
         # TestSerie("Sweep CPU Time", "sweep_time", performances, "blue"),
-        TestSerie("Naive intersections", "naive_intersections", performances, "red"),
-        TestSerie("Sweep intersections", "sweep_intersections", performances, "blue"),
+        # TestSerie("Naive intersections", "naive_intersections", performances, "red"),
+        # TestSerie("Sweep intersections", "sweep_intersections", performances, "blue"),
+        TestSerie("Percentage of correct intersections", "percentage_detected_intersections", performances, "blue"),
     ]
 
     with open(TEMPLATE_NAME, 'r') as file:
