@@ -5,7 +5,9 @@ from sweep_lines import Segment, Point, solve, naive_solve
 
 # sizes = [10, 20, 30 , 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 sizes = [i for i in range(10, 501, 10)]
-NUMBER_OF_TESTS = 10
+NUMBER_OF_TESTS = 20
+
+BOUNDARY = 100
 
 TEMPLATE_NAME: str = 'additional_algorithms/template_performances.tex.jinja'
 
@@ -31,8 +33,8 @@ def generate_random_segments(size) -> list[Segment]:
     for _ in range(size):
         x1, x2 = None, None
         while x1 == x2:
-            x1, y1 = random.randint(0, 10), random.randint(0, 10)
-            x2, y2 = random.randint(0, 10), random.randint(0, 10)
+            x1, y1 = random.uniform(0, BOUNDARY), random.uniform(0, BOUNDARY)
+            x2, y2 = random.uniform(0, BOUNDARY), random.uniform(0, BOUNDARY)
         segment = Segment(Point(x1, y1), Point(x2, y2))
         segments.append(segment)
     return segments

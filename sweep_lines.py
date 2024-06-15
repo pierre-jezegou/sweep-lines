@@ -13,6 +13,12 @@ class Point:
         self.x: float = x
         self.y: float = y
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __hash__(self) -> int:
+        return hash((self.x, self.y))
+
     def __lt__(self, other):
         if self.x == other.x:
             return self.y < other.y
@@ -59,7 +65,7 @@ class Segment:
         """Return the segment in the PGFPlots format."""
         return f"\\addplot[red, mark=*] coordinates {{{self.start.format_point_segment_pgf()} {self.end.format_point_segment_pgf()}}};"
 
-    def compute_y(self, x):
+    def current_y(self, x):
         """ Compute the y-coordinate of the segment at the given x-coordinate """
         if self.start.x == self.end.x:
             return self.start.y
@@ -68,7 +74,7 @@ class Segment:
 
     def segment_key(self, x):
         """ Return the y-coordinate of the segment at the given x-coordinate """
-        return self.compute_y(x)
+        return self.current_y(x)
 
 class Event:
     """ A class to represent an event in the sweep line algorithm."""
@@ -82,26 +88,25 @@ class Event:
         self.point: Point = point
         self.segment: Segment = segment
         self.event_type: str = event_type  # "start", "end", or "intersection"
-        self.intersection_segments: list[Segment] = []
+        self.intersection_segments: list[Segment] = intersection_segments
 
     def __lt__(self, other):
         """
         Compare two events based on their x-coordinate,
         event type, and y-coordinate.
         """
-        # Compare by x coordinate first
         if self.point.x != other.point.x:
             return self.point.x < other.point.x
-        # If x coordinates are the same, compare by event type priority
-        event_priority = {"start": 0, "intersection": 1, "end": 2}
+
+        event_priority = {"start": 2, "intersection": 1, "end": 0}
         if self.event_type != other.event_type:
             return event_priority[self.event_type] < event_priority[other.event_type]
-        # If event types are the same, compare by y coordinate to maintain a consistent order
+
         return self.point.y < other.point.y
 
     def __repr__(self):
         """ Return a string representation of the event."""
-        return f"Event({self.point}, {self.segment}, {self.event_type})"
+        return f"Event({self.point}, {self.segment}, {self.event_type}, {self.intersection_segments})"
 
 def segment_intersection(segment1: Segment, segment2: Segment) -> Point | bool:
     """ Check if two segments intersect """
@@ -123,20 +128,7 @@ def segment_intersection(segment1: Segment, segment2: Segment) -> Point | bool:
         intersection_y = y1 + t * (y2 - y1)
 
         return Point(intersection_x, intersection_y)
-
-def swap_elements(sorted_list, idx1, idx2):
-    """ Swap two elements in a sorted list"""
-    if idx1 >= len(sorted_list) or idx2 >= len(sorted_list):
-        raise IndexError("Index out of range")
-
-    # Remove the elements at idx1 and idx2
-    segment1 = sorted_list.pop(idx1)
-        # Adjust idx2 if it follows idx1
-    segment2 = sorted_list.pop(idx2 - 1 if idx2 > idx1 else idx2)
-
-    # Swap and re-add them
-    sorted_list.add(segment1)
-    sorted_list.add(segment2)
+    return False
 
 def solve(segments: list[Segment]) -> list[Point]:
     """ Main function to solve the intersection problem using the sweep line algorithm."""
@@ -147,12 +139,13 @@ def solve(segments: list[Segment]) -> list[Point]:
 
     heapq.heapify(events)
 
-    sweep_x: float = 0
-    active_segments: SortedList[Segment] = SortedList()
+    active_segments: list[Segment] = []
     intersections = set()
 
-    def add_segment(segment):
-        active_segments.add(segment)
+    def add_segment(event):
+        x = event.point.x
+        segment = event.segment
+        insert_sorted(segment, active_segments, x)
 
     def remove_segment(segment):
         active_segments.remove(segment)
@@ -162,23 +155,79 @@ def solve(segments: list[Segment]) -> list[Point]:
         if idx > 0:
             pred = active_segments[idx - 1]
             ip = segment_intersection(seg, pred)
-            if ip:
+            if ip and not ip in intersections:
                 intersections.add(ip)
                 heapq.heappush(events, Event(ip, None, "intersection", [seg, pred]))
         if idx < len(active_segments) - 1:
             succ = active_segments[idx + 1]
             ip = segment_intersection(seg, succ)
-            if ip:
+            if ip and not ip in intersections:
                 intersections.add(ip)
                 heapq.heappush(events, Event(ip, None, "intersection", [seg, succ]))
 
+    def swap_segments(status: list[Segment],
+                    intersection_segments: list[Segment]
+                    ) -> bool:
+        """
+        Swap the positions of two segments in the status list.
+        Return True if the segments are swapped, otherwise False.
+        """
+        
+        def upper_shift(status_segments, idx1, idx2):
+            sub_status_segments = status_segments[idx1:idx2+1]
+            premier = sub_status_segments.pop(0)
+            sub_status_segments.append(premier)
+            status_segments[idx1:idx2+1] = sub_status_segments
 
+        if len(intersection_segments) != 2:
+            return
+
+        segment1, segment2 = intersection_segments
+
+        if segment1 not in status or segment2 not in status:
+            return
+
+        idx1 = status.index(segment1)
+        idx2 = status.index(segment2)
+
+        if segment1.start.y >= segment2.start.y:
+            if idx1 > idx2:
+                # status[idx1], status[idx2] = status[idx2], status[idx1]
+                upper_shift(status, idx2, idx1)
+                # Check for intersections with the previous and next segments
+                find_intersections(segment1, events)
+                find_intersections(segment2, events)
+                return True
+        else:
+            if idx1 < idx2:
+                # status[idx1], status[idx2] = status[idx2], status[idx1]
+                upper_shift(status, idx1, idx2)
+                # Check for intersections with the previous and next segments
+                find_intersections(segment1, events)
+                find_intersections(segment2, events)
+                return True
+        return False
+
+    def insert_sorted(segment: Segment,
+                    status: list[Segment],
+                    x: float
+                    ) -> None:
+        """
+        Insert a segment into the status list in sorted order.
+        """
+        insert_index = 0
+        for i, seg in enumerate(status):
+            if seg.current_y(x) > segment.current_y(x):
+                insert_index = i
+                break
+            insert_index = i + 1
+
+        status.insert(insert_index, segment)
     while events:
         event = heapq.heappop(events)
-        sweep_x = event.point.x
 
         if event.event_type == "start":
-            add_segment(event.segment)
+            add_segment(event)
             # Check for intersections with the previous and next segments
             find_intersections(event.segment, events)
 
@@ -190,23 +239,18 @@ def solve(segments: list[Segment]) -> list[Point]:
 
             # Check for intersections between the previous and next segments
             if idx > 0 and idx < len(active_segments) - 1:
+                pred = active_segments[idx - 1]
+                succ = active_segments[idx + 1]
                 ip = segment_intersection(active_segments[idx - 1],
                                           active_segments[idx + 1])
-                if ip:
+                if ip and not ip in intersections:
                     intersections.add(ip)
-                    heapq.heappush(events, Event(ip, None, "intersection"))
+                    heapq.heappush(events, Event(ip, None, "intersection", [pred, succ]))
             remove_segment(event.segment)
 
         elif event.event_type == "intersection":
-            try:
-                idx1 = active_segments.index(event.intersection_segments[0])
-                idx2 = active_segments.index(event.intersection_segments[1])
-            except IndexError:
-                continue
-            swap_elements(active_segments, idx1, idx2)
-            # check for intersections with the new neighbors
-            find_intersections(event.intersection_segments[0], events)
-            find_intersections(event.intersection_segments[1], events)
+            swap_segments(active_segments, event.intersection_segments)    
+
     return intersections
 
 
@@ -221,25 +265,25 @@ def naive_solve(segments: list[Segment]) -> list[Point]:
     for i in range(n):
         for j in range(i + 1, n):
             inter = segment_intersection(segments[i], segments[j])
-            if inter:
+            if inter and not inter in intersections:
                 intersections.add(inter)
     return list(intersections)
 
+segments = [
+    Segment(Point(1, 1), Point(4, 4)),
+    Segment(Point(1, 3), Point(3, 1)),
+    Segment(Point(3, 1), Point(5, 3)),
+    Segment(Point(3, 2), Point(5, 0)),
+    Segment(Point(2, 1), Point(2.6, 1.5)),
+    Segment(Point(3, 4), Point(5, 2)),
+    Segment(Point(3, 3.5), Point(4.5, 1.5)),
+    Segment(Point(3.5, 2), Point(4.5, 3.5)),
+    Segment(Point(2.5, 3), Point(3.5, 2.5)),
+    Segment(Point(3, 2.5), Point(4, 3.5)),
+    Segment(Point(1.5, 4), Point(1.75, 0)),
+    Segment(Point(1, 2), Point(5, 3.35)),
+]
+
 if __name__ == "__main__":
     # Example
-    segments = [
-        Segment(Point(1, 1), Point(4, 4)),
-        # Segment(Point(1, 3), Point(3, 1)),
-        # Segment(Point(3, 1), Point(5, 3)),
-        # Segment(Point(3, 2), Point(5, 0)),
-        # Segment(Point(2, 1), Point(2.6, 1.5)),
-        Segment(Point(3, 4), Point(5, 2)),
-        Segment(Point(3, 3.5), Point(4.5, 1.5)),
-        # Segment(Point(3.5, 2), Point(4.5, 3.5)),
-        # Segment(Point(2.5, 3), Point(3.5, 2.5)),
-        # Segment(Point(3, 2.5), Point(4, 3.5)),
-        # Segment(Point(1.5, 4), Point(1.75, 0))
-    ]
-
     intersections = solve(segments)
-    print(intersections)
