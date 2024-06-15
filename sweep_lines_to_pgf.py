@@ -1,3 +1,4 @@
+import random
 from jinja2 import Template
 from sweep_lines import Segment, Point, solve, naive_solve
 
@@ -8,7 +9,6 @@ def segments_to_pgf(segments: list[Segment], display_intersections: bool = True)
     intersections = solve(segments) if display_intersections else []
     
     intersections_naive = naive_solve(segments) if display_intersections else []
-    
     if intersections != intersections_naive:
         print("The naive and sweep line algorithms do not return the same results.")
         print("Percetage of correct intersections: ", len(intersections) / len(intersections_naive))
@@ -48,9 +48,9 @@ if __name__ == "__main__":
     ]
 
     # Genetate 100 random segments
-    # import random
+
     # segments = []
-    # for _ in range(10):
+    # for _ in range(20):
     #     x1, x2 = None, None
     #     while x1 == x2:
     #         x1, y1 = random.randint(0, 10), random.randint(0, 10)
