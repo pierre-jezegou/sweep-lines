@@ -7,13 +7,13 @@ TEMPLATE_NAME: str = 'additional_algorithms/template_2D_intersections.tex.jinja'
 def segments_to_pgf(segments: list[Segment], display_intersections: bool = True) -> None:
     """Convert a list of segments to a PGFPlots plot."""
     intersections = solve(segments) if display_intersections else []
-    
+
     intersections_naive = naive_solve(segments) if display_intersections else []
-    if intersections != intersections_naive:
-        print("The naive and sweep line algorithms do not return the same results.")
-        print("Percetage of correct intersections: ", (len(intersections) / len(intersections_naive)) if len(intersections_naive) > 0 else 0)
-    print("\\\\Number of intersections: ", len(intersections))
-    print("Number of intersections (naive): ", len(intersections_naive))
+    # if intersections != intersections_naive:
+    #     print("The naive and sweep line algorithms do not return the same results.")
+    #     print("Percetage of correct intersections: ", (len(intersections) / len(intersections_naive)) if len(intersections_naive) > 0 else 0)
+    # print("\\\\Number of intersections: ", len(intersections))
+    # print("Number of intersections (naive): ", len(intersections_naive))
     # Load the Jinja template from a file
     with open(TEMPLATE_NAME, 'r') as file:
         template_content = file.read()
@@ -41,8 +41,8 @@ if __name__ == "__main__":
     # for _ in range(20):
     #     x1, x2 = None, None
     #     while x1 == x2:
-    #         x1, y1 = random.randint(0, 100), random.randint(0, 100)
-    #         x2, y2 = random.randint(0, 100), random.randint(0, 100)
+    #         x1, y1 = random.randint(0, 1000), random.randint(0, 1000)
+    #         x2, y2 = random.randint(0, 1000), random.randint(0, 1000)
     #     segment = Segment(Point(x1, y1), Point(x2, y2))
     #     segments.append(segment)
 

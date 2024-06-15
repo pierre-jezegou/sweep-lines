@@ -127,7 +127,7 @@ def segment_intersection(segment1: Segment, segment2: Segment) -> Point | bool:
         intersection_x = x1 + t * (x2 - x1)
         intersection_y = y1 + t * (y2 - y1)
 
-        return Point(intersection_x, intersection_y)
+        return Point(round(intersection_x, 5), round(intersection_y, 5))
     return False
 
 def solve(segments: list[Segment]) -> list[Point]:
@@ -282,6 +282,16 @@ segments = [
     Segment(Point(3, 2.5), Point(4, 3.5)),
     Segment(Point(1.5, 4), Point(1.75, 0)),
     Segment(Point(1, 2), Point(5, 3.35)),
+    # ------- Special tests -------
+    # Colinearité
+    # Segment(Point(1, 1), Point(3, 3)),
+    # Segment(Point(2, 2), Point(5, 5)),
+    # Point sur segment
+    # Segment(Point(1, 3), Point(3, 1)),
+    # Segment(Point(2, 2), Point(5, 3)),
+    # Début segment = fin autre segment
+    # Segment(Point(1, 3), Point(3, 1)),
+    # Segment(Point(3, 1), Point(5, 3)),
 ]
 
 if __name__ == "__main__":
