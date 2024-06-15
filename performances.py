@@ -4,8 +4,10 @@ from jinja2 import Template
 from sweep_lines import Segment, Point, solve, naive_solve
 
 # sizes = [10, 20, 30 , 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-sizes = [i for i in range(10, 501, 10)]
-NUMBER_OF_TESTS = 10
+sizes = [i for i in range(1, 1000, 5)]
+NUMBER_OF_TESTS = 5
+
+BOUNDARY = 10000
 
 TEMPLATE_NAME: str = 'additional_algorithms/template_performances.tex.jinja'
 
@@ -22,6 +24,7 @@ class Test():
         self.naive_time = naive_time
         self.sweep_intersections = sweep_intersections
         self.naive_intersections = naive_intersections
+        self.percentage_detected_intersections = sweep_intersections / naive_intersections if naive_intersections > 0 else 0
 
 
 def generate_random_segments(size) -> list[Segment]:
@@ -30,8 +33,8 @@ def generate_random_segments(size) -> list[Segment]:
     for _ in range(size):
         x1, x2 = None, None
         while x1 == x2:
-            x1, y1 = random.randint(0, 10), random.randint(0, 10)
-            x2, y2 = random.randint(0, 10), random.randint(0, 10)
+            x1, y1 = random.uniform(0, BOUNDARY), random.uniform(0, BOUNDARY)
+            x2, y2 = random.uniform(0, BOUNDARY), random.uniform(0, BOUNDARY)
         segment = Segment(Point(x1, y1), Point(x2, y2))
         segments.append(segment)
     return segments
@@ -83,10 +86,11 @@ class TestSerie:
 def plot_pgf(performances: list[Test]) -> str:
     """Plot the performances in a PGFPlots plot."""
     series = [
-        # TestSerie("Naive CPU Time", "naive_time", performances, "red"),
-        # TestSerie("Sweep CPU Time", "sweep_time", performances, "blue"),
-        TestSerie("Naive intersections", "naive_intersections", performances, "red"),
-        TestSerie("Sweep intersections", "sweep_intersections", performances, "blue"),
+        TestSerie("Naive CPU Time", "naive_time", performances, "red"),
+        TestSerie("Sweep CPU Time", "sweep_time", performances, "blue"),
+        # TestSerie("Naive intersections", "naive_intersections", performances, "red"),
+        # TestSerie("Sweep intersections", "sweep_intersections", performances, "blue"),
+        # TestSerie("Percentage of correct intersections", "percentage_detected_intersections", performances, "blue"),
     ]
 
     with open(TEMPLATE_NAME, 'r') as file:

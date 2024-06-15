@@ -2,11 +2,11 @@
     \begin{axis}
         % Segments
         {% for segment in segments %}
-            {{ segment }};
+            {{ segment }}
         {% endfor %}
         % Intersections
         {% for intersection in intersections %}
-            \node[diamond,fill=blue, inner sep=2pt] at {{ intersection }} {};
+            \node[cross out, text=blue, fill=blue] at {{ intersection }} {$\times$};
         {% endfor %}
     \end{axis}
 \end{tikzpicture}
