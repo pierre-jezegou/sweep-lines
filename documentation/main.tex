@@ -34,43 +34,80 @@ All the source code (programs, documentation and image generators) is available 
 
 For performance testing of algorithms, we use a MacBook Air with the M2 processor. This hardware provides ample computing power to execute our algorithms efficiently, ensuring swift analysis of their performance. As recommended, this report has been written in \LaTeX.
 
-
 \section{Sweep Line Algorithm implementation}
 \subsection{Structures}
+To implement the Sweep Line Algorithm, we need to define the data structures that will be used. First, as the problem is in 2D, we need to define the Point and Segment classes. The Point class represents a point in the plane, while the Segment class represents a line segment defined by two endpoints.\\
+
+The main data structures include the status structure and the event queue. The status structure stores the line segments that intersect the current sweep line position, while the event queue handles the events corresponding to the endpoints of the line segments.
+
 \subsubsection{Point}
-
+First of all, you have to define the \code{Point} class to represent a point in the plane. The Point class has two attributes, $x$ and $y$, representing the $x$ and $y$ coordinates of the point, respectively.
+\begin{itemize}
+    \item \code{x} (type: \type{float}): $x$ coordinate of the point.
+    \item \code{y} (type: \type{float}): $y$ coordinate of the point.
+\end{itemize}
+\input{images/visualizations/class_Point.tex}
+I also implemented classic methods to compare two points (\code{__lt__}, \code{__eq__}) or other to represent the point in pgf format.
 \subsubsection{Segment}
-\paragraph{Intersection of 2 segments}
-The intersection of two line segments can be determined using the concept of linear algebra, specifically by analyzing the determinant of a matrix formed by pairs of points. Given two line segments defined by points $P_1(x_1, y_1)$ and $P_2(x_2, y_2)$ for the first segment, and $Q_1(x_3, y_3)$ and $Q_2(x_4, y_4)$ for the second segment, we form two vectors representing each line segment: vector $P$ from $P_1$ to $P_2$ and vector $Q$ from $Q_1$ to $Q_2$.\\
-$$P = \begin{pmatrix}
-x_2 - x_1\\
-y_2 - y_1
-\end{pmatrix}\qquad
-Q = \begin{pmatrix}
-x_4 - x_3\\
-y_4 - y_3
-\end{pmatrix}$$
+The \code{Segment} class represents a line segment defined by two endpoints. The Segment class has two attributes, \code{start} and \code{end}, representing the two endpoints of the segment. I also implemented the \code{__lt__} method to compare two segments based on their $x$ and $y$ coordinates. Finally, there is a method to generate the code to represent the segment in pgf format
+\begin{itemize}
+    \item \code{start} (type: \type{Point}): Start point of the segment.
+    \item \code{end} (type: \type{Point}): End point of the segment.
+\end{itemize}
+\input{images/visualizations/class_Segment.tex}
 
-$$M = \begin{pmatrix}
-x_2 - x_1 & x_4 - x_3\\
-y_2 - y_1 & y_4 - y_3
-\end{pmatrix}$$
+\subsubsection{Event}
+As the sweep line encounters the endpoints of the line segments, it triggers events that update the status structure and perform any necessary computations. The Event class represents an event corresponding to an endpoint of a line segment. The Event class has three attributes:
+\begin{itemize}
+    \item \code{point} (type: \type{Point}): The point corresponding to the event.
+    \item \code{segment} (type: \type{Segment}): The segment corresponding to the event.
+    \item \code{type} (type: \type{str}): The type of the event, either "start" or "end".
+\end{itemize}
+There is one more attribute to store the two segments in case of an intersection event.
+\input{images/visualizations/class_Event.tex}
 
-The intersection of the two line segments occurs if and only if the determinant of the matrix $M$ formed by vectors $P$ and $Q$ is non-zero. Geometrically, this determinant represents the area formed by the parallelogram spanned by the two vectors. If the determinant is non-zero, it indicates that the two vectors are not collinear, meaning the two line segments intersect. Conversely, if the determinant is zero, it implies that the two vectors are collinear, and the line segments do not intersect.\\
-As a consequence, the determinant of the matrix $M$ can be used to determine the intersection of two line segments. The determinant is calculated as follows:
-$$\mathrm{det}(M) = (x_2 - x_1)(y_4 - y_3) - (y_2 - y_1)(x_4 - x_3)$$
+\subsubsection{Status and EventQueue}
+In the implementation of the sweep line algorithm to find intersection points of line segments, I chose to use a heap for the event queue and a \code{SortedList} for the active segments to optimize performance and ensure efficient data management.\\
 
-Be careful, this formula only gives the intersection point of the two lines, not the intersection point of the two segments. To determine the intersection point of the two segments, we must verify that the intersection point lies within the bounds of both segments. This can be done by checking that the intersection point lies within the bounding box of both segments. If the intersection point satisfies this condition, it is the intersection point of the two segments. Otherwise, the two segments do not intersect.\\
-The bounding box of a line segment is defined by the minimum and maximum x and y coordinates of the two endpoints of the segment. The intersection point of the two segments is within the bounding box of both segments if its x and y coordinates lie within the bounding boxes of both segments.\\
+The heap, implemented using Python's \code{heapq} module, is ideal for the event queue because it allows for efficient extraction of the smallest element, which corresponds to the next event in the sweep line process. The heap provides $O(\log n)$ time complexity for both insertion and extraction, which is crucial for maintaining performance as we dynamically add and remove events.\\
 
-Let $I=(x_i, y_i)$ the potential int point. $I$ is the intersection point of the two segments if and only if $I$ is in the bounding box of both segments.
-$$x_i \in [x_{min}, x_{max}], y_i \in [y_{min}, y_{max}]\qquad \text{with}
-\left\lbrace\begin{array}{l}
-x_{min} = \min_{i\in[1, 4]}\{x_i\}\\
-x_{max} = \max_{i\in[1, 4]}\{x_i\}\\
-y_{min} = \min_{i\in[1, 4]}\{y_i\}\\
-y_{max} = \max_{i\in[1, 4]}\{y_i\}
+For the active segments, the \code{SortedList} from the \code{sortedcontainers} module is used because it maintains the segments in a sorted order based on their y-coordinates at the current x-coordinate of the sweep line. This is essential for quickly finding and updating the relative order of segments, detecting intersections, and handling segment endpoints efficiently. The \code{SortedList} supports $O(\log n)$ insertion, deletion, and search operations, which significantly enhances the algorithm's efficiency compared to a naive list implementation.\\
+
+By using a heap for the event queue and a \code{SortedList} for the active segments, the sweep line algorithm can efficiently manage the dynamic nature of events and maintain the correct order of segments, leading to an overall optimal performance in detecting intersections.
+
+
+\section{Intersection}
+To compute the intersection of two line segments, I define a function \code{segment_intersection(segment1, segment2)} that uses the parametric form of the segments. Each segment is represented by its start and end points. Let $(x_1, y_1)$ and $(x_2, y_2)$ be the coordinates of the start and end points of $\mathbf{P}$, the first segment, and $(x_3, y_3)$ and $(x_4, y_4)$ be the coordinates of the start and end points of $\mathbf{Q}$, the second segment.
+
+Using the parametric equations:
+$$\mathbf{P}(t) = (x_1 + t(x_2 - x_1), y_1 + t(y_2 - y_1))$$
+$$\mathbf{Q}(u) = (x_3 + u(x_4 - x_3), y_3 + u(y_4 - y_3))$$
+
+We find the intersection by solving:
+$$\left\{\begin{array}{l}
+    x_1 + t(x_2 - x_1) = x_3 + u(x_4 - x_3)\\
+    y_1 + t(y_2 - y_1) = y_3 + u(y_4 - y_3)
 \end{array}\right.$$
+
+The determinant of the system is and if it is equal to 0, the lines are parallel and the function returns \code{False}. Otherwise, we compute the parameters $t$ and $u$:
+$$\text{det} = (x_1 - x_2) \cdot (y_3 - y_4) - (y_1 - y_2) \cdot (x_3 - x_4)$$
+If $\text{det} = 0$, the lines are parallel, and the function returns \code{False}.
+
+If the lines are not parallel, we compute the parameters $t$ and $u$:
+$$t = \frac{(x_1 - x_3) \cdot (y_3 - y_4) - (y_1 - y_3) \cdot (x_3 - x_4)}{\text{det}}$$
+$$u = -\frac{(x_1 - x_2) \cdot (y_1 - y_3) - (y_1 - y_2) \cdot (x_1 - x_3)}{\text{det}}$$
+
+The intersection point is valid if $0 \leq t \leq 1$ and $0 \leq u \leq 1$. The intersection coordinates are:
+$$
+\text{Point} = 
+\begin{pmatrix}
+    x_1 + t \cdot (x_2 - x_1)\\
+    y_1 + t \cdot (y_2 - y_1)
+\end{pmatrix}
+$$
+
+The function returns this intersection point as a \code{Point} object, rounded to five decimal places. If $t$ and $u$ are not within $[0, 1]$, the function returns \code{False}. Using the parametric form ensures an accurate computation of the intersection.
+
 
 \subsection{Event driven}
 \subsection{Structures used}

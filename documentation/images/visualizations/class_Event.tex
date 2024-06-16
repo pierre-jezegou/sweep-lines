@@ -1,0 +1,34 @@
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \node[draw, rounded corners=2mm, inner sep = 0.2cm, fill=orange!0] { 
+        \begin{tikzpicture} 
+            \node[inner sep = 1mm] (title) { \Large{\bfseries Event }}; 
+            % \draw (title.south west) -- (title.south east);
+            \node[at=(title.south), anchor=north, inner sep=3mm, align=left, fill=green!30!black!10, yshift=-0.2cm] (attributes) {
+                \begin{minipage}{60mm}
+                    \textbf{Attributes}\\
+                    \small{0}: \verb|point|\\
+\small{1}: \verb|segment|\\
+\small{2}: \verb|event_type|\\
+\small{3}: \verb|intersection_segments|
+                \end{minipage} 
+                };
+            % \draw (attributes.north west) -- (attributes.north east);
+            \node[at=(attributes.south), anchor=north, inner sep=3mm, align=left, fill=blue!10, yshift=-0.2cm] (methods) {
+                \begin{minipage}{60mm}
+                    \textbf{Methods}\\
+                    \small{0}: \verb|__eq__|\\
+\small{1}: \verb|__hash__|\\
+\small{2}: \verb|__init__|\\
+\small{3}: \verb|__lt__|\\
+\small{4}: \verb|__repr__|
+                \end{minipage} 
+                };
+            % \draw (methods.north west) -- (methods.north east);
+        \end{tikzpicture}
+        }; 
+    \end{tikzpicture}
+    \caption{Class description - Event }
+    \label{class:Event}
+\end{figure}
