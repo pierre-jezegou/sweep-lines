@@ -1,12 +1,12 @@
 \begin{tikzpicture}
-    \begin{axis}
+    \begin{axis}[title={{ title }}]
         % Segments
         {% for segment in segments %}
             {{ segment }}
         {% endfor %}
         % Intersections
         {% for intersection in intersections %}
-            \node[cross out, text=blue, fill=blue] at {{ intersection }} {$\times$};
+            \node[cross out, text=blue, fill=blue] at {{ intersection }} {$\mathbf{\times}$};
         {% endfor %}
     \end{axis}
 \end{tikzpicture}

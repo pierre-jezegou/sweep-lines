@@ -1,5 +1,9 @@
 \begin{tikzpicture}
-\begin{axis}[]
+\begin{axis}[
+    title={ {{ title }}},
+    xlabel={ {{ xlabel }} },
+    ylabel={ {{ ylabel }} }
+]
 {% for metric in metrics %}
             {{ metric }};
         {% endfor %}
