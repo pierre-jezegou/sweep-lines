@@ -72,10 +72,6 @@ class Segment:
         slope = (self.end.y - self.start.y) / (self.end.x - self.start.x)
         return self.start.y + slope * (x - self.start.x)
 
-    def segment_key(self, x):
-        """ Return the y-coordinate of the segment at the given x-coordinate """
-        return self.current_y(x)
-
 class Event:
     """ A class to represent an event in the sweep line algorithm."""
     def __init__(self,
@@ -130,6 +126,30 @@ def segment_intersection(segment1: Segment, segment2: Segment) -> Point | bool:
         return Point(round(intersection_x, 5), round(intersection_y, 5))
     return False
 
+
+def add_segment(event: list[Event], active_segments: list[Segment]):
+    def insert_sorted(segment: Segment,
+                    status: list[Segment],
+                    x: float
+                    ) -> None:
+        """
+        Insert a segment into the status list in sorted order.
+        """
+        insert_index = 0
+        for i, seg in enumerate(status):
+            if seg.current_y(x) > segment.current_y(x):
+                insert_index = i
+                break
+            insert_index = i + 1
+
+        status.insert(insert_index, segment)
+    x = event.point.x
+    segment = event.segment
+    insert_sorted(segment, active_segments, x)
+
+def remove_segment(segment, active_segments: list[Segment]):
+    active_segments.remove(segment)
+
 def solve(segments: list[Segment]) -> list[Point]:
     """ Main function to solve the intersection problem using the sweep line algorithm."""
     events: list[Event] = []
@@ -141,14 +161,6 @@ def solve(segments: list[Segment]) -> list[Point]:
 
     active_segments: list[Segment] = []
     intersections = set()
-
-    def add_segment(event):
-        x = event.point.x
-        segment = event.segment
-        insert_sorted(segment, active_segments, x)
-
-    def remove_segment(segment):
-        active_segments.remove(segment)
 
     def find_intersections(seg, events):
         idx = active_segments.index(seg)
@@ -208,26 +220,11 @@ def solve(segments: list[Segment]) -> list[Point]:
                 return True
         return False
 
-    def insert_sorted(segment: Segment,
-                    status: list[Segment],
-                    x: float
-                    ) -> None:
-        """
-        Insert a segment into the status list in sorted order.
-        """
-        insert_index = 0
-        for i, seg in enumerate(status):
-            if seg.current_y(x) > segment.current_y(x):
-                insert_index = i
-                break
-            insert_index = i + 1
-
-        status.insert(insert_index, segment)
     while events:
         event = heapq.heappop(events)
 
         if event.event_type == "start":
-            add_segment(event)
+            add_segment(event, active_segments)
             # Check for intersections with the previous and next segments
             find_intersections(event.segment, events)
 
@@ -246,12 +243,46 @@ def solve(segments: list[Segment]) -> list[Point]:
                 if ip and not ip in intersections:
                     intersections.add(ip)
                     heapq.heappush(events, Event(ip, None, "intersection", [pred, succ]))
-            remove_segment(event.segment)
+            remove_segment(event.segment, active_segments)
 
         elif event.event_type == "intersection":
             swap_segments(active_segments, event.intersection_segments)    
 
-    return intersections
+    return list(intersections)
+
+def semi_naive_solve(segments: list[Segment]) -> list[Point]:
+    """
+    Semi-naive solution to find the intersection points of a set of line segments.
+    Compare all pairs of active segments to find intersections.
+    """
+    events: list[Event] = []
+    for segment in segments:
+        events.append(Event(segment.start, segment, "start"))
+        events.append(Event(segment.end, segment, "end"))
+
+    heapq.heapify(events)
+
+    active_segments: list[Segment] = []
+    intersections = set()
+
+    while events:
+        event = heapq.heappop(events)
+
+        if event.event_type == "start":
+            add_segment(event, active_segments)
+
+        elif event.event_type == "end":
+            idx = active_segments.index(event.segment)
+
+            for i, active_segment in enumerate(active_segments):
+                if i != idx:
+                    inter = segment_intersection(event.segment, active_segment)
+                    if inter and not inter in intersections:
+                        intersections.add(inter)
+
+            remove_segment(event.segment, active_segments)
+    return list(intersections)
+
 
 
 def naive_solve(segments: list[Segment]) -> list[Point]:
@@ -268,32 +299,3 @@ def naive_solve(segments: list[Segment]) -> list[Point]:
             if inter and not inter in intersections:
                 intersections.add(inter)
     return list(intersections)
-
-segments = [
-    Segment(Point(1, 1), Point(4, 4)),
-    Segment(Point(1, 3), Point(3, 1)),
-    Segment(Point(3, 1), Point(5, 3)),
-    Segment(Point(3, 2), Point(5, 0)),
-    Segment(Point(2, 1), Point(2.6, 1.5)),
-    Segment(Point(3, 4), Point(5, 2)),
-    Segment(Point(3, 3.5), Point(4.5, 1.5)),
-    Segment(Point(3.5, 2), Point(4.5, 3.5)),
-    Segment(Point(2.5, 3), Point(3.5, 2.5)),
-    Segment(Point(3, 2.5), Point(4, 3.5)),
-    Segment(Point(1.5, 4), Point(1.75, 0)),
-    Segment(Point(1, 2), Point(5, 3.35)),
-    # ------- Special tests -------
-    # Colinearité
-    # Segment(Point(1, 1), Point(3, 3)),
-    # Segment(Point(2, 2), Point(5, 5)),
-    # Point sur segment
-    # Segment(Point(1, 3), Point(3, 1)),
-    # Segment(Point(2, 2), Point(5, 3)),
-    # Début segment = fin autre segment
-    # Segment(Point(1, 3), Point(3, 1)),
-    # Segment(Point(3, 1), Point(5, 3)),
-]
-
-if __name__ == "__main__":
-    # Example
-    intersections = solve(segments)
