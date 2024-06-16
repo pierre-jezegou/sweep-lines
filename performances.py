@@ -3,9 +3,8 @@ import time
 from jinja2 import Template
 from sweep_lines import Segment, Point, solve, naive_solve, semi_naive_solve
 
-# sizes = [10, 20, 30 , 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-sizes = [i for i in range(1, 200, 10)]
-NUMBER_OF_TESTS = 5
+sizes = [i for i in range(1, 500, 5)]
+NUMBER_OF_TESTS = 20
 
 BOUNDARY = 10000
 
@@ -28,7 +27,8 @@ class Test():
         self.sweep_intersections = sweep_intersections
         self.naive_intersections = naive_intersections
         self.semi_naive_intersections = semi_naive_intersections
-        self.percentage_detected_intersections = sweep_intersections / naive_intersections if naive_intersections > 0 else 0
+        self.percentage_swl_detected_intersections = sweep_intersections / naive_intersections if naive_intersections > 0 else 0
+        self.percentage_sn_detected_intersections = semi_naive_intersections / naive_intersections if naive_intersections > 0 else 0
 
 
 def generate_random_segments(size) -> list[Segment]:
@@ -46,25 +46,26 @@ def generate_random_segments(size) -> list[Segment]:
 def get_performances() -> list[dict]:
     """Mesearure the performance of the sweep line algorithm."""
     performances = []
-
+    print("Starting retrieval of performances")
     for size in sizes:
+        print(f"\tSize: {size}")
         for _ in range(NUMBER_OF_TESTS):
             segments = generate_random_segments(size)
-            start_time = time.time()
+            start_time = time.process_time()
             result = solve(segments)
-            end_time = time.time()
+            end_time = time.process_time()
             sweep_intersections = len(result)
             sweep_time = end_time - start_time
 
-            start_time = time.time()
+            start_time = time.process_time()
             result_naive = naive_solve(segments)
-            end_time = time.time()
+            end_time = time.process_time()
             naive_intersections = len(result_naive)
             naive_time = end_time - start_time
-            
-            start_time = time.time()
+
+            start_time = time.process_time()
             result_semi_naive = semi_naive_solve(segments)
-            end_time = time.time()
+            end_time = time.process_time()
             semi_naive_intersections = len(result_semi_naive)
             semi_naive_time = end_time - start_time
 
@@ -95,28 +96,63 @@ class TestSerie:
             \\addlegendentry{{{self.title}}};"""
 
 
-def plot_pgf(performances: list[Test]) -> str:
+def plot_pgf(series: list[TestSerie],
+             title: str = "",
+             xlabel: str = "Number of segments",
+             ylabel: str = "Performance ?"
+             ) -> str:
     """Plot the performances in a PGFPlots plot."""
-    series = [
-        TestSerie("Naive CPU Time", "naive_time", performances, "red"),
-        TestSerie("Sweep CPU Time", "sweep_time", performances, "blue"),
-        TestSerie("Semi-naive CPU Time", "semi_naive_time", performances, "orange"),
-        # TestSerie("Naive intersections", "naive_intersections", performances, "red"),
-        # TestSerie("Sweep intersections", "sweep_intersections", performances, "blue"),
-        # TestSerie("Percentage of correct intersections", "percentage_detected_intersections", performances, "blue"),
-    ]
-
     with open(TEMPLATE_NAME, 'r') as file:
         template_content = file.read()
 
     template = Template(template_content)
-
-    rendered_template = template.render(metrics=[serie.plot_pgf() for serie in series])
-
+    rendered_template = template.render(metrics=[serie.plot_pgf() for serie in series],
+                                        title=title,
+                                        xlabel=xlabel,
+                                        ylabel=ylabel)
     return rendered_template
 
+# series = [
+#         TestSerie("Naive CPU Time", "naive_time", performances, "red"),
+#         TestSerie("Sweep CPU Time", "sweep_time", performances, "blue"),
+#         TestSerie("Semi-naive CPU Time", "semi_naive_time", performances, "orange"),
+#         # TestSerie("Naive intersections", "naive_intersections", performances, "red"),
+#         # TestSerie("Sweep intersections", "sweep_intersections", performances, "blue"),
+#         # TestSerie("Percentage of correct intersections", "percentage_detected_intersections", performances, "blue"),
+#     ]
 
+def generate(data: dict):
+    print(f"Generating {data['filename']}...")
+    rendered_template = plot_pgf(data["series"], data["title"], data["xlabel"], data["ylabel"])
+    with open(data["filename"], 'w') as file:
+        file.write(rendered_template)
 
+ROOT_PLOTS = 'documentation/images/plots'
 if __name__ == "__main__":
-    result = get_performances()
-    print(plot_pgf(result))
+    data = get_performances()
+    plots_to_save = [
+        {
+            'filename': 'performances.tex',
+            'title': 'CPU Time for different algorithms',
+            'xlabel': 'Number of segments',
+            'ylabel': 'Time (s)',
+            'series': [
+                TestSerie("Naive CPU Time", "naive_time", data, "red"),
+                TestSerie("Sweep CPU Time", "sweep_time", data, "blue"),
+                TestSerie("Semi-naive CPU Time", "semi_naive_time", data, "orange"),
+            ]
+        },
+        {
+            'filename': 'percentage_of_detection.tex',
+            'title': 'Percentage of detected intersections compared to the naive algorithm',
+            'xlabel': 'Number of segments',
+            'ylabel': '% of detected intersections',
+            'series': [
+                TestSerie("Sweep lines", "percentage_swl_detected_intersections", data, "blue"),
+                TestSerie("Semi-naive algorithm", "percentage_sn_detected_intersections", data, "orange"),
+            ]
+        }
+    ]
+    for plot in plots_to_save:
+        plot['filename'] = f"{ROOT_PLOTS}/{plot['filename']}"
+        generate(plot)
