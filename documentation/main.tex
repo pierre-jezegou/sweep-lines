@@ -3,7 +3,7 @@
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 
-\newcommand{\documentStatus}{DRAFT}
+\newcommand{\documentStatus}{SUBMITTED}
 
 
 \input{settings-content/packages-and-conf}
@@ -23,20 +23,29 @@
 The Segment Intersection Problem is a classic problem in computational geometry. It involves finding all the intersections between a set of line segments in the plane. This problem has various applications, such as in computer graphics, robotics, and geographic information systems.\\
 
 There are several algorithms to solve the Segment Intersection Problem, and one popular approach is the Sweep Line Algorithm. This algorithm involves sweeping a vertical line across the plane and processing the line segments as they are encountered by the sweep line.
-To implement the Sweep Line Algorithm, we need to define the data structures and events that will be used. The data structures typically include a status structure to store the line segments that intersect the current sweep line position, and a priority queue to handle the events.\\
+To implement the Sweep Line Algorithm, we need to define the data structures and events that will be used. The data structures typically include a status structure to store the line segments which intersect the current sweep line position, and a priority queue to handle the events.\\
 The events in the Sweep Line Algorithm correspond to the endpoints of the line segments. As the sweep line encounters an endpoint, it triggers an event that updates the status structure and performs any necessary computations.\\
 
 By implementing the Sweep Line Algorithm, we can efficiently find all the intersections between the line segments and solve the Segment Intersection Problem.
 
 
 \subsection{Project information}
-All the source code (programs, documentation and image generators) is available in the GitHub respository dedicated to the project: https://github.com/pierre-jezegou/sweep-lines
+All the source code (programs, documentation and image generators) is available in the GitHub respository dedicated to the project: \textbf{\url{https://github.com/pierre-jezegou/sweep-lines}}
 
 For performance testing of algorithms, we use a MacBook Air with the M2 processor. This hardware provides ample computing power to execute our algorithms efficiently, ensuring swift analysis of their performance. As recommended, this report has been written in \LaTeX.
 
+
+\subsection{Final example}
+You can find below an example of the final result of the sweep line algorithm. This example is a mi-complex one with 12 segments. The algorithm is able to detect all the intersections between the segments. The result is plotted using the \code{tikz} package in \LaTeX.
+\begin{figure}[h]
+    \centering
+    \input{images/plots/complete_example.tex}
+    \caption{Complete example}
+\end{figure}
+
 \section{Sweep Line Algorithm implementation}
 \subsection{Structures}
-To implement the Sweep Line Algorithm, we need to define the data structures that will be used. First, as the problem is in 2D, we need to define the Point and Segment classes. The Point class represents a point in the plane, while the Segment class represents a line segment defined by two endpoints.\\
+To implement the Sweep Line Algorithm, you need to define the data structures that will be used. First, as the problem is in 2D, you need to define the Point and Segment classes. The Point class represents a point in the plane, while the Segment class represents a line segment defined by two endpoints.\\
 
 The main data structures include the status structure and the event queue. The status structure stores the line segments that intersect the current sweep line position, while the event queue handles the events corresponding to the endpoints of the line segments.
 
@@ -76,7 +85,7 @@ For the active segments, the \code{SortedList} from the \code{sortedcontainers} 
 By using a heap for the event queue and a \code{SortedList} for the active segments, the sweep line algorithm can efficiently manage the dynamic nature of events and maintain the correct order of segments, leading to an overall optimal performance in detecting intersections.
 
 
-\section{Intersection}
+\subsection{Intersection}
 To compute the intersection of two line segments, I define a function \code{segment_intersection(segment1, segment2)} that uses the parametric form of the segments. Each segment is represented by its start and end points. Let $(x_1, y_1)$ and $(x_2, y_2)$ be the coordinates of the start and end points of $\mathbf{P}$, the first segment, and $(x_3, y_3)$ and $(x_4, y_4)$ be the coordinates of the start and end points of $\mathbf{Q}$, the second segment.
 
 Using the parametric equations:
@@ -105,30 +114,115 @@ $$
     y_1 + t \cdot (y_2 - y_1)
 \end{pmatrix}
 $$
-
 The function returns this intersection point as a \code{Point} object, rounded to five decimal places. If $t$ and $u$ are not within $[0, 1]$, the function returns \code{False}. Using the parametric form ensures an accurate computation of the intersection.
 
+\subsection{Naive and semi-naive approach}
+I implemented a totally naive approach to compute the intersection of two line segments. The naive approach involves checking all possible combinations of line segments to find the intersections. This approach is inefficient for large datasets but provides a baseline for comparison and validation of the sweep line algorithm's results. Indeed, the naive approach has a time complexity of $O(n^2)$, where $n$ is the number of line segments.\\
 
-\subsection{Event driven}
-\subsection{Structures used}
+I chose to implement a semi-naive approach to compute the intersection of two line segments. The semi-naive approach involves checking all possible combinations of \textbf{active} line segments to find the intersections.
+
+\subsection{Sweep line algorithm main parts}
+The Sweep Line Algorithm consists of several key components that work together to find the intersections of line segments efficiently. The main parts of the algorithm include:
+\begin{itemize}
+    \item \textbf{Initialization}: The algorithm starts by initializing the event queue with the endpoints of the line segments and sorting them by their $x$-coordinates. The status structure is initialized as an empty \code{SortedList} to store the active segments.
+    \lstinputlisting[language=Python, firstline=155, lastline=163]{../sweep_lines.py}
+    \item \textbf{Event processing}: The algorithm processes the events in the event queue one by one as the sweep line moves from left to right. When an event is encountered, the algorithm updates the status structure and checks for intersections between the active segments.
+    \lstinputlisting[language=Python, firstline=223, lastline=226]{../sweep_lines.py}
+    \item \textbf{Intersection detection}: The algorithm detects intersections between the active segments by comparing adjacent segments in the status structure. If an intersection is found, the algorithm adds the intersection point to the event queue.
+    \lstinputlisting[language=Python, firstline=165, lastline=178]{../sweep_lines.py}
+    \item \textbf{Status structure update}: The algorithm updates the status structure by inserting or deleting segments based on the event type (start or end). The status structure is maintained in sorted order based on the segments' $y$-coordinates at the current $x$-coordinate of the sweep line.
+    \lstinputlisting[language=Python, firstline=227, lastline=227]{../sweep_lines.py}
+    \lstinputlisting[language=Python, firstline=246, lastline=246]{../sweep_lines.py}
+\end{itemize}
 
 \section{Tests and results}
+First, I implemented all the code needed to plot directly the segments and the intersections. I used the \code{tikz} package to generate the plots. I also implemented a function to generate random segments and test the intersection function. The function generates a random dataset of line segments and computes the intersections using the sweep line algorithm. The results are plotted to visualize the intersections and validate the algorithm's correctness. This helps a lot to understand the algorithm and to debug it.
+
 \subsection{Examples implementation}
-\subsubsection{First example}
-\subsubsection{Second example}
+Before trying to generate intersections for complex datasets, we first have to study some simple and also special cases. Indeed, we can have two segments that do not intersect, two segments that intersect at one point, or two segments that overlap...
+\subsubsection{Colinear intersecting segments}
+\begin{figure}[h!]
+    \centering
+    \input{images/plots/colinear_segments.tex}
+    \caption{Colinear intersecting segments}
+\end{figure}
+When two segments are colinear, we can have three cases: the segments do not intersect, the segments intersect at one point, or the segments overlap. In the first case, the function returns \code{False}. In the second case, the function returns the intersection point. In the third case, my algorithm can't detect the intersection.
+
+\subsubsection{Start is an end points of another segment}
+\begin{figure}[h!]
+    \centering
+    \input{images/plots/start_segment_end_other.tex}
+    \caption{Start is an end points of another segment}
+\end{figure}
+When the start point of a segment is an end point of another segment, I chose not to consider it as an intersection. Indeed, the segments are not intersecting, and the start point is not an intersection point. The function returns \code{False}. I chose this because I had problems in the priority of the events. Indeed, I prefred catching other intersections than completly obvious ones.
+
+\subsubsection{Point belongs to the other segment}
+\begin{figure}[h!]
+    \centering
+    \input{images/plots/point_on_segment.tex}
+    \caption{Point belongs to the other segment}
+\end{figure}
+When a point belongs to the other segment, this is clearly an intersection. The function returns the intersection point.
+
+\subsubsection{Complexe case}
+I generated a random dataset of 12 segments to test the intersection function. The results show that the function can accurately detect the intersections between the line segments and return the correct intersection points (except obvious ones). The function has been tested for various cases, including colinear segments, intersecting segments, and non-intersecting segments, but not has produced accurate results in all cases.
+\begin{figure}[h]
+    \centering
+    \input{images/plots/complete_example.tex}
+    \caption{Complete example}
+\end{figure}
+
 \subsection{Performance tests}
-\subsection{Results}
+\subsubsection{CPU time}
+First, we measure the CPU time taken by the sweep line algorithm to find the intersections of a set of random line segments. The CPU time is measured using the \code{time.process_time()} function, which returns the CPU time in seconds. The performance tests are conducted for different numbers of line segments to evaluate the scalability of the algorithm. The results show that the CPU time increases linearly with the number of line segments, indicating that the algorithm has a time complexity of $O(n \log n)$.
+
+\begin{figure}[h]
+    \centering
+    \input{images/plots/cpu_time.tex}
+    \caption{CPU time}
+\end{figure}
+We can see on this plot that our sweep line algorithm has not a time complexity of $O(n \log n)$ as promised. This is probably caused by how much we have to check the events and the active segments and mostly because of the number of time we are checking the active segments. Indeed, we have to check all the active segments to find the intersections: we compare, for each event, the segment below and above, and then in case of deletion, one more comparison. This is why the time complexity is not as expected.\\
+I chose to decrease performances because otherwise, I was not able to detect the intersections.
+
+This can be solved by using a more efficient data structure to store the active segments, such as a balanced binary search tree or a segment tree. These data structures provide $O(\log n)$ time complexity for insertion, deletion, and search operations, which can significantly improve the performance of the algorithm. By using a more efficient data structure for the active segments, we can reduce the overall time complexity of the algorithm and achieve better scalability for large datasets.
+
+\subsubsection{Number of intersections}
+It is important to know how many intersections are detected by the sweep line algorithm for a given set of line segments. The number of intersections is a key metric for evaluating the algorithm's performance and accuracy. The performance tests show that the number of intersections detected by the algorithm increase with the number of line segments, indicating that the algorithm can efficiently find all the intersections in the dataset.
+\begin{figure}[h]
+    \centering
+    \input{images/plots/percentage_of_detection.tex}
+    \caption{Number of intersections}
+\end{figure}
+This figure compares the performance of the Sweep Line Algorithm (blue crosses) and the Semi-naive Algorithm (orange crosses) in detecting intersections as the number of segments increases.
+
+\begin{itemize}
+    \item \textbf{Initial Efficiency}: The Sweep Line Algorithm is highly efficient with fewer segments, detecting nearly 100\% of intersections.
+    \item \textbf{Performance Decrease}: As the number of segments increases, the efficiency of the Sweep Line Algorithm decreases, likely due to increased computational load and floating-point precision issues.
+    \item \textbf{Consistency}: The Semi-naive Algorithm maintains a consistent detection rate, though at a lower percentage compared to the initial performance of the Sweep Line Algorithm.
+    \item \textbf{Scalability}: The Sweep Line Algorithm shows scalability issues with larger datasets, whereas the Semi-naive Algorithm provides a stable but lower performance. This is probably due to the increased number of comparisons and events to process in the Sweep Line Algorithm and swapping segments in the sweep line algorithm.
+\end{itemize}
+
+
+\subsection{Limits}
+\begin{itemize}
+    \item \textbf{Floating point precision}: The Sweep Line Algorithm relies on floating-point arithmetic to compute the intersection points of line segments. Due to the inherent imprecision of floating-point numbers, there may be small errors in the computed intersection points. These errors can accumulate and affect the overall accuracy of the algorithm, especially for segments that are nearly parallel or nearly coincident. To mitigate this issue, we can use a tolerance threshold to determine when two points are considered equal, allowing for a small margin of error in the intersection computations. I chose to use a tolerance of $10^{-5}$ to compare the intersection points, which provides a reasonable balance between accuracy and performance.
+    \item \textbf{Vertical segments}: The Sweep Line Algorithm may encounter issues when handling vertical segments, as the slope of a vertical line is undefined. I chose not to handle vertical segments explicitly in the algorithm, as they can be treated as special cases by rotating the plane by a small angle to avoid vertical segments. This approach simplifies the implementation and ensures that the algorithm can handle most cases efficiently.
+\end{itemize}
 
 \section{Conclusions}
+The Segment Intersection Problem is inherently challenging, particularly when dealing with a large number of segments. Throughout this project, I have implemented and tested several techniques to maximize the detection of intersection points efficiently.
+
+The Sweep Line Algorithm, with its sophisticated event-driven approach, provides significant improvements over naive and semi-naive methods, especially for smaller datasets. However, as the number of segments increases, the algorithm's performance diminishes due to computational load and floating-point precision issues. Despite these challenges, the Sweep Line Algorithm remains a powerful tool for solving the Segment Intersection Problem.
+
+The key takeaway from this project is the balance between performance and accuracy. While it is difficult to achieve 100\% intersection detection for extensive datasets, the efforts made to optimize the algorithm demonstrate its potential and effectiveness in various applications. Further optimization and exploration of advanced data structures can enhance its scalability and accuracy, making it even more robust for practical use.
+
+In conclusion, the journey of implementing the Sweep Line Algorithm underscores the complexity of computational geometry problems and highlights the importance of continuous improvement and adaptation of algorithms to achieve the best possible results.
+
 \section{Appendix}
-\lstinputlisting[firstline=1,lastline=50, language=Python]{../additional_algorithms/graphic_sweep_lines.py}
+\lstinputlisting[language=Python, caption=Main algorithm]{../sweep_lines.py}
+\lstinputlisting[language=Python, caption=Measure performances algorithm]{../performances.py}
 
 \newpage
 \listoffigures
 \lstlistoflistings
-\listoftables
-
-\input{../random_segments_2.tex}
-\input{../tikz.tex}
-
 \end{document}
