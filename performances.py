@@ -1,10 +1,10 @@
 import random
 import time
 from jinja2 import Template
-from sweep_lines import Segment, Point, solve, naive_solve
+from sweep_lines import Segment, Point, solve, naive_solve, semi_naive_solve
 
 # sizes = [10, 20, 30 , 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-sizes = [i for i in range(1, 1000, 5)]
+sizes = [i for i in range(1, 200, 10)]
 NUMBER_OF_TESTS = 5
 
 BOUNDARY = 10000
@@ -17,13 +17,17 @@ class Test():
                  size: int,
                  sweep_time: float,
                  naive_time: float,
+                 semi_naive_time: float,
                  sweep_intersections: int,
-                 naive_intersections: int):
+                 naive_intersections: int,
+                 semi_naive_intersections: int):
         self.size = size
         self.sweep_time = sweep_time
         self.naive_time = naive_time
+        self.semi_naive_time = semi_naive_time
         self.sweep_intersections = sweep_intersections
         self.naive_intersections = naive_intersections
+        self.semi_naive_intersections = semi_naive_intersections
         self.percentage_detected_intersections = sweep_intersections / naive_intersections if naive_intersections > 0 else 0
 
 
@@ -57,12 +61,20 @@ def get_performances() -> list[dict]:
             end_time = time.time()
             naive_intersections = len(result_naive)
             naive_time = end_time - start_time
+            
+            start_time = time.time()
+            result_semi_naive = semi_naive_solve(segments)
+            end_time = time.time()
+            semi_naive_intersections = len(result_semi_naive)
+            semi_naive_time = end_time - start_time
 
             performances.append(Test(size=size,
                                      sweep_time=sweep_time,
                                      naive_time=naive_time,
                                      sweep_intersections=sweep_intersections,
-                                     naive_intersections=naive_intersections))
+                                     naive_intersections=naive_intersections,
+                                     semi_naive_intersections=semi_naive_intersections,
+                                     semi_naive_time=semi_naive_time))
 
     return performances
 
@@ -88,6 +100,7 @@ def plot_pgf(performances: list[Test]) -> str:
     series = [
         TestSerie("Naive CPU Time", "naive_time", performances, "red"),
         TestSerie("Sweep CPU Time", "sweep_time", performances, "blue"),
+        TestSerie("Semi-naive CPU Time", "semi_naive_time", performances, "orange"),
         # TestSerie("Naive intersections", "naive_intersections", performances, "red"),
         # TestSerie("Sweep intersections", "sweep_intersections", performances, "blue"),
         # TestSerie("Percentage of correct intersections", "percentage_detected_intersections", performances, "blue"),
