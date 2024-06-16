@@ -1,0 +1,14 @@
+\begin{tikzpicture}
+    \begin{axis}[title=Point on segment]
+        % Segments
+        
+            \addplot[red, mark=*] coordinates {(1, 3) (3, 1)};
+        
+            \addplot[red, mark=*] coordinates {(2, 2) (5, 3)};
+        
+        % Intersections
+        
+            \node[cross out, text=blue, fill=blue] at (axis cs:2.0, 2.0) {$\mathbf{\times}$};
+        
+    \end{axis}
+\end{tikzpicture}
